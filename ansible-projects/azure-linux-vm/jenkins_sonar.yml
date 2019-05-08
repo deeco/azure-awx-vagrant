@@ -4,6 +4,9 @@ hosts: jenkins_server
 remote_user: vagrant
 become: yes
 
+vars:
+ssl_certs_common_name: sonar
+
 roles:
   - geerlingguy.repo-epel
   - geerlingguy.jenkins
@@ -27,7 +30,7 @@ become: yes
 
 roles:
   - wtanaka.unzip
-  - zanini.sonar
+  - geerlingguy.sonar
 
 - name: On Premises CentOS
 hosts: app_server

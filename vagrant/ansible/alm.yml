@@ -43,7 +43,7 @@
     - name: "delete plugins"
       file:
         path: "{{ sonar_path }}/sonarqube-{{ sonar_major_version }}.{{ sonar_minor_version }}/extensions/plugins"
-        state: absent      
+        state: absent
   roles:
     - role: geerlingguy.java
     - role: ANXS.postgresql
@@ -57,13 +57,13 @@
     - role: lean_delivery.sonarqube
       sonar_java_opts:
         web: "-server -Xmx512m -Xms512m"
-        es: "-Xmx1g -Xms1g" 
+        es: "-Xmx1g -Xms1g"
         ce: "-Xmx512m -Xms512m"
       web:
         host: "localhost"
         port: 9000
-        path: "/" 
-      sonar_proxy_server_name: "{{ ssl_certs_common_name }}"
+        path: "/"
+      sonar_proxy_server_name: "{{ ssl_certs_common_name | default('sonar') }}"
       sonar_proxy_http: True
       # sonar_optional_plugins:
       #   - "https://sonarsource.bintray.com/Distribution/sonar-auth-github-plugin/sonar-auth-github-plugin-1.3.jar"
@@ -96,5 +96,3 @@
 
   roles:
     - jenkins-keys-config
-      
-    

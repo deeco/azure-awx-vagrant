@@ -3,23 +3,13 @@
 sonar_box ansible_host=127.0.0.1 ansible_port=2201 ansible_user='vagrant' ansible_ssh_private_key_file='/Users/dgowran/azure/azure-awx-vagrant/.vagrant/machines/sonar_box/virtualbox/private_key'
 ansible01 ansible_host=127.0.0.1 ansible_port=2222 ansible_user='vagrant' ansible_ssh_private_key_file='/Users/dgowran/azure/azure-awx-vagrant/.vagrant/machines/ansible01/virtualbox/private_key'
 jenkins_box ansible_host=127.0.0.1 ansible_port=2200 ansible_user='vagrant' ansible_ssh_private_key_file='/Users/dgowran/azure/azure-awx-vagrant/.vagrant/machines/jenkins_box/virtualbox/private_key'
-app_box ansible_host=127.0.0.1 ansible_port=2203 ansible_user='vagrant' ansible_ssh_private_key_file='/Users/dgowran/azure/azure-awx-vagrant/.vagrant/machines/app_box/virtualbox/private_key'
-app2_box ansible_host=127.0.0.1 ansible_port=2204 ansible_user='vagrant' ansible_ssh_private_key_file='/Users/dgowran/azure/azure-awx-vagrant/.vagrant/machines/app2_box/virtualbox/private_key'
-sonar ansible_host=127.0.0.1 ansible_port=2206 ansible_user='vagrant' ansible_ssh_private_key_file='/Users/dgowran/azure/azure-awx-vagrant/.vagrant/machines/sonar/virtualbox/private_key'
-nexus_box ansible_host=127.0.0.1 ansible_port=2202 ansible_user='vagrant' ansible_ssh_private_key_file='/Users/dgowran/azure/azure-awx-vagrant/.vagrant/machines/nexus_box/virtualbox/private_key'
-jenkins ansible_host=127.0.0.1 ansible_port=2205 ansible_user='vagrant' ansible_ssh_private_key_file='/Users/dgowran/azure/azure-awx-vagrant/.vagrant/machines/jenkins/virtualbox/private_key'
 
 [jenkins_server]
-jenkins
 jenkins_box
 
 [sonar_server]
-sonar
 sonar_box
 
 [nexus_server]
-nexus_box
 
 [app_server]
-app_box
-app2_box
