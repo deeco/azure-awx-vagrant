@@ -1,0 +1,87 @@
+---
+ 
+- name: Install Consul
+ 
+hosts: all
+ 
+become: yes
+ 
+become_method: sudo
+ 
+gather_facts: yes
+ 
+tags: [consul]
+ 
+tasks:
+ 
+- name: Update the software package repository
+ 
+apt:
+ 
+update_cache: yes
+ 
+- name: Install dependencies
+ 
+package:
+ 
+name: "{{ item }}"
+ 
+state: latest
+ 
+with_items:
+ 
+- curl
+ 
+- net-tools
+ 
+- unzip
+ 
+- name: Install consul
+ 
+unarchive:
+ 
+src: https://releases.hashicorp.com/consul/1.4.4/consul_1.4.4_linux_amd64.zip
+
+ 
+dest: /usr/local/bin
+ 
+remote_src: yes
+ 
+- name: Verify consul installation
+ 
+shell: "consul --version"
+ 
+register: consul_version
+ 
+- assert:
+ 
+that:
+ 
+- "'Consul' in consul_version.stdout"
+ 
+- name: Create consul user
+ 
+user:
+ 
+name: consul
+ 
+- name: Create Consul /var directory
+ 
+file:
+ 
+path: /var/consul
+ 
+state: directory
+ 
+owner: consul
+ 
+group: consul
+ 
+mode: 0755
+
+- name: Copy Config to point to consul server
+  copy:
+    src: ../../consul/config.json
+    dest: /etc/consul.d/config.json
+    mode: 0644
+

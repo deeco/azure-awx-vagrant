@@ -10,6 +10,7 @@ azure_creds_dev_dub="/vagrant/credentials/azure_ansible_cred_dev_dub.yml"
 ssh_public_key_path="$HOME/.ssh/id_rsa.pub"
 awx_http_port_check=80
 awx_demo_data_import_check="tower-cli instance_group get tower 2> /dev/null"
+org_1="Development Dublin"
 
 # Create SSH key
 if [ ! -f "$ssh_public_key_path" ]
@@ -63,25 +64,36 @@ fi
 echo -e "\nINFO: Creating Azure Project in AWX..."
 tower-cli project create --name "Azure Project" --description "Azure Playbooks" --scm-type "manual" --local-path "azure-linux-vm" --organization "Default"
 
+# Create Azure Organization Dev Dublin
+echo -e "\nINFO: Creating Azure Organization in AWX..."
+tower-cli organization create --name "Azure Development Dublin" --description "Azure Org Dublin"
+
 # Create Azure inventory
 echo -e "\nINFO: Creating Azure Inventory in AWX..."
-tower-cli inventory create --name "Azure Inventory" --description "Azure Inventory" --organization "Default" --variables "ssh_public_key: \"$ssh_public_key\""
+tower-cli inventory create --name "Azure Inventory" --description "Azure Inventory" --organization "Azure Development Dublin" --variables "ssh_public_key: \"$ssh_public_key\""
 
 # Create Azure credential
 echo -e "\nINFO: Creating Azure Credential in AWX..."
 echo -e "\nINFO: Folder Directory for credentials" $azure_creds_dev_dub
-tower-cli credential create --name "Azure Credential Development Dublin" --description "Azure Credential Development Dublin" --organization "Default" --credential-type "Microsoft Azure Resource Manager" --inputs "@$azure_creds_dev_dub"
+tower-cli credential create --name "Azure Credential Development Dublin" --description "Azure Credential Development Dublin" --organization "Azure Development Dublin" --credential-type "Microsoft Azure Resource Manager" --inputs "@$azure_creds_dev_dub"
 
 # Create Azure job template for a simple Resource Group
 echo -e "\nINFO: Creating job template for a simple Azure Dev Dublin Resource Group..."
 # WORKAROUND: you must supply an SSH credential type initially
-tower-cli job_template create --name "Azure Dev Dublin Resource Group" --description "Azure Dev Dublin Resource Group - Job Template" --inventory "Azure Inventory" --project "Azure Project" --playbook "resource_group.yml" --credential "Demo Credential"
+tower-cli job_template create --name "Azure Dev Dublin Create Resource Group" --description "Azure Dev Dublin Resource Group - Job Template" --inventory "Azure Inventory" --project "Azure Project" --playbook "resource_group.yml" --credential "Demo Credential"
 # WORKAROUND: you can then associate an Azure credential afterwards
-tower-cli job_template associate_credential --job-template "Azure Dev Dublin Resource Group" --credential "Azure Credential Development Dublin"
+tower-cli job_template associate_credential --job-template "Azure Dev Dublin Create Resource Group" --credential "Azure Credential Development Dublin"
 
 # Create Azure job template for a CentOS Linux VM and all required resources
 echo -e "\nINFO: Creating job template for a CentOS Linux VM and all required resources in Azure..."
 # WORKAROUND: you must supply an SSH credential type initially
-tower-cli job_template create --name "Azure CentOS Linux VM" --description "Azure CentOS Linux VM - Job Template" --inventory "Azure Inventory" --project "Azure Project" --playbook "centos_vm.yml" --credential "Demo Credential"
+tower-cli job_template create --name "Azure Create CentOS Linux VM" --description "Azure CentOS Linux VM - Job Template" --inventory "Azure Inventory" --project "Azure Project" --playbook "centos_vm.yml" --credential "Demo Credential"
 # WORKAROUND: you can then associate an Azure credential afterwards
-tower-cli job_template associate_credential --job-template "Azure CentOS Linux VM" --credential "Azure Credential Development Dublin"
+tower-cli job_template associate_credential --job-template "Azure Create CentOS Linux VM" --credential "Azure Credential Development Dublin"
+
+# Create Azure job template for Consul Client
+echo -e "\nINFO: Creating job template for consul client install...."
+# WORKAROUND: you must supply an ssh credential type initially
+tower-cli job_template create --name "Azure Install Consul Client" --description "Azure Install Consul Client - Job Template" --inventory "Azure Inventory" --project "Azure Project" --playbook "consul_client_install.yml" --credential "Demo Credential"
+# WORKAROUND: you can then associate an Azure credential afterwards
+tower-cli job_template associate_credential --job-template "Azure Install Consul Client" --credential "Azure Credential Development Dublin"

@@ -14,7 +14,7 @@ net_prefix          = '192.168.10'
 ansible01_ip        = "#{net_prefix}.20"
 jenkins01_ip        = "#{net_prefix}.21"
 sonar01_ip        = "#{net_prefix}.22"
-nexus01_ip        = "#{net_prefix}.23"
+nexus_ip        = "#{net_prefix}.23"
 app01_ip        = "#{net_prefix}.24"
 app02_ip        = "#{net_prefix}.25"
 
@@ -157,9 +157,9 @@ Vagrant.configure('2') do |config|
   config.vm.provider "libvirt" do |libvirt|
       libvirt.storage_pool_name = "ext_storage"
   end
-
+  
   config.vm.provision "ansible" do |ansible|
-      ansible.playbook = "vagrant/ansible/alm.yml"
+      ansible.playbook = "ansible/alm.yml"
       ansible.groups = {
           "jenkins_server" => ["jenkins", "jenkins_box"],
           "sonar_server" => ["sonar", "sonar_box"],
