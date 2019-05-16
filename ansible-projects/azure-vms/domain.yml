@@ -1,0 +1,15 @@
+---
+- name: promote server to a Domain Controller
+  hosts: all
+  connection: winrm
+
+  tasks:
+  - name: create domain controllers
+    win_domain:
+      dns_domain_name: ansible.local
+      safe_mode_password: Password01
+    register: domain_result
+
+  - name: reboot after creating domain
+    win_reboot:
+    when: domain_result.reboot_required

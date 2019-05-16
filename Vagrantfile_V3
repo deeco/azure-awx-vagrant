@@ -1,0 +1,176 @@
+# Plugin checker by DevNIX: https://github.com/DevNIX/Vagrant-dependency-manager
+# vagrant-reload is required to reboot Windows machines and retain Vagrant connection
+require File.dirname(__FILE__)+'/vagrant/plugin/dependency_manager'
+check_plugins ['vagrant-reload']
+
+# Variables
+## Boxes
+linux_box_name      = 'bento/centos-7.6'
+linux_box_version   = '201812.27.0'
+
+## Network
+## NIC Adapter #2 (1st NIC is reserved for Vagrant comms)
+net_prefix          = '192.168.10'
+ansible01_ip        = "#{net_prefix}.20"
+jenkins01_ip        = "#{net_prefix}.21"
+sonar01_ip        = "#{net_prefix}.22"
+nexus01_ip        = "#{net_prefix}.23"
+app01_ip        = "#{net_prefix}.24"
+app02_ip        = "#{net_prefix}.25"
+
+# Main configuration
+Vagrant.configure('2') do |config|
+
+  # VirtualBox global box settings
+  config.vm.provider 'virtualbox' do |vb|
+    vb.linked_clone = true
+    vb.gui          = false
+    vb.customize ['modifyvm', :id, '--clipboard', 'bidirectional']
+    vb.customize ['setextradata', 'global', 'GUI/SuppressMessages', 'all']
+  end
+
+  # Increase timeout in case VMs joining the domain take a while to boot
+  config.vm.boot_timeout = 1200
+
+  # Ansible Control VM
+  config.vm.define 'ansible01' do |subconfig|
+    # CPU and RAM
+    subconfig.vm.provider 'virtualbox' do |vb|
+      vb.cpus   = '2'
+      vb.memory = '4096'
+    end
+
+    # Hostname and networking
+    subconfig.vm.hostname    = 'ansible01'
+    subconfig.vm.box         = linux_box_name
+    subconfig.vm.box_version = linux_box_version
+    subconfig.vm.network 'private_network', ip: ansible01_ip
+    subconfig.vm.network 'forwarded_port', guest: 22, host: 33520, auto_correct: true
+    subconfig.vm.synced_folder ".", "/vagrant", type: "rsync", rsync__auto: true
+
+    # Provisioning
+    subconfig.vm.provision 'shell', path: 'vagrant/scripts/install_common.sh'
+    # Install Ansible
+    subconfig.vm.provision 'shell', path: 'vagrant/scripts/install_ansible_azure.sh'
+    # Install Docker
+    subconfig.vm.provision 'shell', path: 'vagrant/scripts/install_docker_ce.sh'
+    # Install Ansible AWX
+    subconfig.vm.provision 'shell', path: 'vagrant/scripts/install_ansible_awx.sh'
+    # Configure Ansible AWX
+    subconfig.vm.provision 'shell', path: 'vagrant/scripts/configure_ansible_awx.sh'
+  end
+  
+  # Every Vagrant development environment requires a box. You can search for
+  # boxes at https://atlas.hashicorp.com/search.
+  config.vm.box = "centos/7"
+
+  ################ VBox #############################
+  # let's use vbox
+  # TODO: let's refactor and build a function for god's sake
+  config.vm.define "jenkins_box" do |jenkins|
+      config.vm.hostname = "jenkins.local"
+      jenkins.vm.network :private_network, ip: jenkins01_ip
+      jenkins.vm.provider :virtualbox do |v|
+         v.gui = false
+         v.memory = 2048
+      end
+  end
+    
+  config.vm.define "sonar_box" do |sonar|
+    config.vm.hostname = "sonar.local"
+    sonar.vm.network :private_network, ip: sonar01_ip 
+    sonar.vm.provider :virtualbox do |v|
+        v.gui = false
+        v.memory = 3000
+    end
+ end
+
+  config.vm.define "nexus_box", primary: true do |nexus|
+    config.vm.hostname = "nexus.local"
+    nexus.vm.network :private_network, ip: nexus01_ip 
+    nexus.vm.provider :virtualbox do |v|
+        v.gui = false
+        v.memory = 1024   
+    end
+  end
+
+  config.vm.define "app_box", primary: true do |app|
+      config.vm.hostname = "app.local"
+      app.vm.network :private_network, ip: app01_ip 
+      app.vm.provider :virtualbox do |v|
+        v.gui = false
+        v.memory = 512  
+      end
+  end
+
+  config.vm.define "app2_box", primary: true do |app2|
+      config.vm.hostname = "app2.local"
+      app2.vm.network :private_network, ip: app02_ip 
+      app2.vm.provider :virtualbox do |v|
+         v.gui = false
+         v.memory = 512
+      end
+  end
+ 
+  ################ LIB VIRT #########################
+
+  config.vm.define "jenkins" do |jenkins|
+      config.vm.hostname = "jenkins.local"
+      jenkins.vm.network :private_network, ip: "172.16.10.100"
+      jenkins.vm.provider :libvirt do |lb|
+          lb.memory = 2048
+      end
+  end
+
+  config.vm.define "sonar" do |sonar|
+      config.vm.hostname = "sonar.local"
+      sonar.vm.network :private_network, ip: "172.16.10.110"
+      sonar.vm.provider :libvirt do |lb|
+          lb.memory = 2048
+      end
+  end
+
+  config.vm.define "nexus", primary: true do |nexus|
+      config.vm.hostname = "nexus.local"
+      nexus.vm.network :private_network, ip: "172.16.10.120"
+      nexus.vm.provider :libvirt do |lb|
+        lb.memory = 1024
+      end
+  end
+
+  config.vm.define "app", primary: true do |app|
+    config.vm.hostname = "app.local"
+    app.vm.network :private_network, ip: "172.16.10.130"
+    app.vm.provider :libvirt do |lb|
+        lb.memory = 512
+    end
+  end
+
+  config.vm.define "app2", primary: true do |app2|
+    config.vm.hostname = "app2.local"
+    app2.vm.network :private_network, ip: "172.16.10.140"
+    app2.vm.provider :libvirt do |lb|
+        lb.memory = 512
+    end
+  end
+
+  config.vm.provider "libvirt" do |libvirt|
+      libvirt.storage_pool_name = "ext_storage"
+  end
+
+  config.vm.provision "ansible" do |ansible|
+      ansible.playbook = "vagrant/ansible/alm.yml"
+      ansible.groups = {
+          "jenkins_server" => ["jenkins", "jenkins_box"],
+          "sonar_server" => ["sonar", "sonar_box"],
+          "nexus_server" => ["nexus", "nexus_box"],
+          "app_server" => ["app", "app2", "app_box", "app2_box"],
+      }
+  end
+
+  if Vagrant.has_plugin?("vagrant-hostmanager")
+      config.hostmanager.enabled = true
+      config.hostmanager.manage_host = true
+      config.hostmanager.manage_guest = true
+  end
+end

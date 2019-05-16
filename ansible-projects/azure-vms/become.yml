@@ -1,0 +1,21 @@
+---
+- name: setup user for become with Admin rights
+  hosts: all
+  connection: winrm
+  become_method: runas
+
+  tasks:
+  - name: setup user to become
+    win_domain_user:
+      name: Azure_Admin
+      password: Azure2019!
+      firstname: Azure_Admin
+      surname: Ansible
+      groups:
+      - Domain Admins
+      state: present
+
+  - name: ensure become works
+    win_command: whoami
+    become: yes
+    register: become_output

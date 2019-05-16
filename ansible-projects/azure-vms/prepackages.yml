@@ -1,0 +1,52 @@
+---
+- name: configure the Windows Server
+  hosts: all
+  connection: winrm
+
+  tasks:
+  - name: install_chocolatey
+    win_chocolatey:
+      name: "chocolatey"
+      state: downgrade
+      version: 0.10.11
+
+  - name: install notepadplusplus
+    win_chocolatey:
+      name: notepadplusplus
+      state: present
+
+  - name: install googlechrome
+    win_chocolatey:
+      name: googlechrome
+      state: present
+      ignore_checksums: yes
+
+  - name: install git
+    win_chocolatey:
+      name: git
+      state: present
+
+  - name: install filezilla
+    win_chocolatey:
+      name: filezilla
+      state: present
+
+  - name: install 7zip
+    win_chocolatey:
+      name: 7zip
+      state: present
+
+  - name: install tortisegit
+    win_chocolatey:
+      name: tortisegit
+      state: present
+
+  - name: install ant
+    win_chocolatey:
+      name: ant
+      state: present
+
+  - name: install gradle
+    win_chocolatey:
+      name: gradle
+      state: present

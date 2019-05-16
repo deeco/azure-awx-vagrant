@@ -5,7 +5,7 @@
   tasks:
     - name: Create resource group
       azure_rm_resourcegroup:
-        name: ansible-rg
+        name: dev-ansible-rg-dublin
         location: eastus
       register: rg
     - debug:

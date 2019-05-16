@@ -6,14 +6,13 @@ awx_username="admin"
 awx_password="password"
 awx_projects_source_folder="/vagrant/ansible-projects/"
 awx_projects_dest_folder="/var/lib/awx/projects"
-awx_projects_playbooks_git="https://github.com/deeco/ansible-playbooks"
-azure_creds_dev_dub="~/credentials/azure_ansible_cred_dev_dub.yml"
+azure_creds_dev_dub="/vagrant/credentials/azure_ansible_cred_dev_dub.yml"
 ssh_public_key_path="$HOME/.ssh/id_rsa.pub"
 awx_http_port_check=80
 awx_demo_data_import_check="tower-cli instance_group get tower 2> /dev/null"
-resource_group=""
+resource_group="dev-ansible-rg-dublin"
 region="westeurope"
-inventory="Azure Instance Resources"
+inventory="Azure Domain Controller"
 
 # Create SSH key
 if [ ! -f "$ssh_public_key_path" ]
@@ -67,9 +66,6 @@ fi
 echo -e "\nINFO: Creating Azure Project in AWX..."
 tower-cli project create --name "Azure Project" --description "Azure Playbooks" --scm-type "manual" --local-path "azure-vms" --organization "Default"
 
-echo -e "\nINFO: Creating Azure Project in AWX..."
-tower-cli project create --name "Azure Playbooks" --description "Azure Playbooks GIT" --scm-type=git --scm-url="$awx_projects_playbooks_git" --organization "Default" --wait
-
 # Create Azure Organization Dev Dublin
 echo -e "\nINFO: Creating Azure Organization in AWX..."
 tower-cli organization create --name "Azure Development Dublin" --description "Azure Org Dublin"
@@ -79,8 +75,8 @@ echo -e "\nINFO: Creating Azure Inventory in AWX..."
 tower-cli inventory create --name "Azure Inventory" --description "Azure Inventory" --organization "Azure Development Dublin" --variables "ssh_public_key: \"$ssh_public_key\""
 
 # Create Azure inventory
-echo -e "\nINFO: Creating Azure Instance Resources Inventory in AWX..."
-tower-cli inventory create --name "Azure Instance Resources" --description "Azure Instance Resources" --organization "Azure Development Dublin" --variables "ansible_winrm_server_cert_validation: ignore"
+echo -e "\nINFO: Creating Azure Domain Controller Inventory in AWX..."
+tower-cli inventory create --name "Azure Domain Controller" --description "Azure Domain Controller" --organization "Azure Development Dublin" --variables "ansible_winrm_server_cert_validation: ignore"
 
 # Create Azure credential
 echo -e "\nINFO: Creating Azure Credential in AWX..."
@@ -131,13 +127,6 @@ tower-cli job_template create --name "Azure PowerShell Install" --description "A
 # WORKAROUND: you can then associate an Azure credential afterwards
 tower-cli job_template associate_credential --job-template "Azure PowerShell Install" --credential "Azure Credential Development Dublin"
 
-# Create Azure job template for a powershell install version 5.1
-echo -e "\nINFO: Creating job template IIS in Azure windows VM's..."
-# WORKAROUND: you must supply an SSH credential type initially
-tower-cli job_template create --name "Azure IIS Install" --description "Azure IIS Install - Job Template" --inventory "$inventory" --project "Azure Playbooks" --playbook "iis.yml" --credential "Windows Credentials"
-# WORKAROUND: you can then associate an Azure credential afterwards
-tower-cli job_template associate_credential --job-template "Azure IIS Install" --credential "Azure Credential Development Dublin"
-
 # Create Azure job template for a Azure Become
 echo -e "\nINFO: Creating job template for a Azure Become and all required resources in Azure..."
 # WORKAROUND: you must supply an SSH credential type initially
@@ -182,13 +171,13 @@ tower-cli job_template associate_credential --job-template "Azure Provision" --c
 
 # Create Template Workflow and associate
 echo -e "\nINFO: Creating Workflow template for a Azure Provision and all required resources in Azure..."
-tower-cli workflow create --name="Azure Instance Resources Workflow" --organization="Azure Development Dublin" --description="Azure Instance Resources Workflow"
-tower-cli node create -W "Azure Instance Resources Workflow" --job-template="Azure Provision"
-tower-cli node create -W "Azure Instance Resources Workflow" --inventory-source "Azure-ansible-resource-group"
-tower-cli node create -W "Azure Instance Resources Workflow" --job-template="Azure PowerShell Install"
-tower-cli node create -W "Azure Instance Resources Workflow" --job-template="Azure Domain"
-tower-cli node create -W "Azure Instance Resources Workflow" --job-template="Azure Files"
-tower-cli node create -W "Azure Instance Resources Workflow" --job-template="Azure Package"
+tower-cli workflow create --name="Azure Domain Controller Workflow" --organization="Azure Development Dublin" --description="Azure Domain Controller Workflow"
+tower-cli node create -W "Azure Domain Controller Workflow" --job-template="Azure Provision"
+tower-cli node create -W "Azure Domain Controller Workflow" --inventory-source "Azure-ansible-resource-group"
+tower-cli node create -W "Azure Domain Controller Workflow" --job-template="Azure PowerShell Install"
+tower-cli node create -W "Azure Domain Controller Workflow" --job-template="Azure Domain"
+tower-cli node create -W "Azure Domain Controller Workflow" --job-template="Azure Files"
+tower-cli node create -W "Azure Domain Controller Workflow" --job-template="Azure Package"
 tower-cli node associate_success_node 1 2
 tower-cli node associate_success_node 2 3
 tower-cli node associate_success_node 3 4

@@ -1,0 +1,21 @@
+---
+# This playbook installs powershell version 5
+
+- name: Run powershell script
+  hosts: all
+  gather_facts: false
+  tasks:
+    - name: install powershell 5.1
+      win_copy:
+        src: powershell_upgrade.ps1
+        dest: C:/powershell_upgrade.ps1
+      register: out
+
+    - debug: var=out.stdout_lines
+
+    - name: Run remote PowerShell Script
+      win_shell: powershell.exe -ExecutionPolicy ByPass -File C:/powershell_upgrade.ps1
+
+    - pause: minutes=2
+
+    - win_reboot:
