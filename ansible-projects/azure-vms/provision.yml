@@ -3,14 +3,6 @@
   hosts: localhost
   connection: local
   vars:
-    az_resource_group_name: "dev-ansible-rg-dublin"
-    azure_resource_group: "{{ az_resource_group_name }}"
-    azure_vm_username: azure_user
-    vault_azure_vm_password: MyPassword123!!!
-    azure_virtual_network: vnet001
-    azure_subnet: subnet001
-    azure_storage_account: ansibletowertest001
-    azure_virtual_machine: towerdc01
     azure_vm_size: Standard_B2s
     azure_sku: 2012-R2-Datacenter
     azure_location: westeurope

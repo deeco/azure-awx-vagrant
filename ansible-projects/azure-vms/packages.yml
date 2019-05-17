@@ -1,6 +1,6 @@
 ---
 - name: configure the Windows Server
-  hosts: all
+  hosts: '{{azure_resource_group}}'
   connection: winrm
 
   tasks:

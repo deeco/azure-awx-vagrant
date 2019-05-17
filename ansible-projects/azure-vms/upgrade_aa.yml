@@ -1,0 +1,19 @@
+---
+# This playbook installs powershell version 5
+
+- name: Run powershell script
+  hosts: '{{azure_resource_group}}'
+  gather_facts: false
+  tasks:
+    - name: get aa powershell script
+      win_copy:
+        src: setup_aa.ps1
+        dest: C:/ansible/setup_aa.ps1
+      register: out
+
+    - debug: var=out.stdout_lines
+
+    - name: Run remote PowerShell Script aa get from scm
+      win_shell: powershell.exe -ExecutionPolicy ByPass -File C:/ansible/setup_aa.ps1 -user '{{git_username}}'  -pass '{{git_password}}' -branch '{{branch_id}}'
+
+    - pause: minutes=3
