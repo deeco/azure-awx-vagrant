@@ -10,3 +10,4 @@
       include_sub_features: True
       include_management_tools: True
     register: win_feature
+  - win_reboot:
